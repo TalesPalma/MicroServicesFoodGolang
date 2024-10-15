@@ -1,0 +1,36 @@
+networks:
+  app-tier:
+    driver: bridge
+
+services:
+  Etcd:
+    image: 'bitnami/etcd:latest'
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+    ports:
+      - 2379:2379
+      - 2380:2380
+    networks:
+      - app-tier
+
+  
+  Kong:
+    image: 'kong/kong-gateway:latest'
+    environment:
+      - KONG_DATABASE=off
+      - KONG_PROXY_ACCESS_LOG=/dev/stdout
+      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
+      - KONG_PROXY_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001  # Porta do admin
+      - KONG_PROXY_LISTEN=0.0.0.0:8000   # Porta do proxy
+      - KONG_ETCD_HOST=etcd:2379  # Configurando o kong para usar Etcd
+    ports:
+      - 8000:8000 # Porta publica para o proxy
+      - 8001:8001 # Porta publica para o admin
+    networks:
+      - app-tier
+
+
+
